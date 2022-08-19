@@ -144,5 +144,73 @@ sp -> Short for 'scale-independent pixel'. Scale-independent pixels are density-
 Android translates 'dp' and 'sp' into pixels at runtime. 
 
 
+## Activity Lifecycle
+Every instance of an activity has a lifecycle. During this lifecycle, an activity transitions between 4 STATES:
+1. Resumed
+2. Started
+3. Created
+4. NonExistent
+
+For each transition, there is an Activity function that notifies the activity of the change in its state. 
+
+<img width="676" alt="image" src="https://user-images.githubusercontent.com/66931789/185660127-ff16d279-250a-40e1-8994-3aee7b362f09.png">
+
+<img width="536" alt="image" src="https://user-images.githubusercontent.com/66931789/185660216-f95d246e-a9ee-433a-aa28-47fef151bc58.png">
+
+Depending on the circumstances, a started activity may be fully or partially visible. 
+
+- Nonexistent represents an activity that has not been launched yet or an activity that was destroyed (by the user completely killing the app, for example). For that reason, this state is sometimes referred to as the "destroyed" state. There is no instance in memory, and there is no associated view for the user to see or interact with. 
+
+- Created represents an activity that has an instance in memory but whose view is not visible on the screen. This state occurs in passing when the activity is first spinning up and reoccurs any time the view is fully out of view (such as when the user launches another full-screen activity to the foreground, navigates to the Home screen, or uses the overview screen to switch tasks).
+
+- Started represents an activity that has lost focus but whose view is visible or partially visible. An activity would be partially visible, for example, if the user launched a new dialog-themed or transparent activity on top of it. An activity could also be fully visible but not in the foregroudn if the user is viewing two activities in multi-window mode (also called "split-screen mode"). 
+
+- Resumed represents an activity that is in memory, fully visible, and in the foreground. It is usually the state of the activity the user is currently interacting with. 
+
+It is important to understand that you never call onCreate(Bundle?) or any of the other Activity lifecycle functions yourself. You simply override the callbacks in your activity subclass. Then Android calls the lifecycle callbacks at the appropriate time to notify the activity that its state is changing. 
+
+## Making Log Messages
+In Android, the android.util.Log class sends log messages to a SHARED SYSTEM-LEVEL LOG. Log has several functions for logging messages. The one that you will use most often is 'd()', which stands for 'debug'. 
+This function takes two parameters, both Strings. The first parameter identifies **the source of the message**, and the second is the contents of the message. 
+The first string is typically a TAG constant with the class name as its value. This makes it easy to determine the source of a particular message. 
+
+Notice that you call the superclass implementations in the lifecycle callbakcs. These superclass calls are required. Calling the superclass implementation should be the first line of each callback function override implementation. 
+
+## Device Configuration Changes and the Activity Lifecycle
+Rotating the device changes the 'device configuration'. The device configuration is a set of characteristics that describe the current state of an individual device. The characteristics that make up the configuration include screen orientation, screen density, screen size, keyboard type, dock mode, language, and more. 
+
+Applications can provide alternative resources to match device configurations. When a 'runtime configuration change' occurs, there may be resources that are a better match for the new configuration. So Android destroys the activity, looks for resources thata are the best fit for the new configuration, and then rebuilds a new instance of the activity with those resources. 
+
+## For the More Curious: UI Updates and Multi-Window Mode
+Prior to Android 7.0 Nougat, most activities spent very little time in the started state. Instead, activities passed through the started state quickly on their way to either the resumed state or the created state. Because of this, many developers assumed they only needed to update their UI when their activity was in the resumed state. It was common practice to use 'onResume()' and 'onPause()' to start or stop any ongoing updated related to the UI (such as animations or data refreshes). 
+
+When multi-window mode was introduced in Nougat, it broke the assumption that resumed activities were the only fully visible activities. This, in turn, broke the intended behavior of many apps. Now, started activities can be fully visible for extended periods of time when the user is in multi-window mode. And users will expect those started activities to behave as if they were resumed. 
+
+Consider video, for example. Suppose you had a pre-Nougat app that provided simple video playback. You started (or resumed) video playback in **onResume()** and paused playback in **onPause()**. But then multi-window mode comes along, and your app stops playback when it is started but users are interacting with another app in the second window. Users start complaining, because they want to watch their videos WHILE they send a text message in a separate window. 
+
+Luckily, the firs is relatively simple: Move your playback resuming and pausing to 'onStart()' and 'onStop()'. This goes for any live-updating data, like a photo gallery app that refreshes to show new images as they are pushed to a Flickr stream. 
+In short, your activities should update the UI during THEIR ENTIRE VISIBLE LIFECYCLE, from 'onStart()' to 'onStop()'. 
+
+Unfortunately, not everyone got the memo, and many apps still misbehave in multi-window mode. To fix this, **the Android team introduced multi-resume for multi-window mode in Android 10**. Multi-resume means that the fully visible activity in each of the windows will be in the resumed state when the device is in multi-window mode, regardless of which window the user last touched. 
+Still, until multi-resume becomes a readily available standard across most devices in the marketplace, use your knowledge of the activity lifecycle to reason about where to place UI update code.
+
+## Log Levels
+When you use the **android.util.Log** class to send log messages, you control not only the content of the message but also a 'level' that specifies how important the message is. Android supports five log levels. 
+
+1. ERROR - Log.e
+2. WARNING - Log.w
+3. INFO - Log.i
+4. DEBUG - Log.d - debug output (may be filtered out)
+5. VERBOSE - Log.v - development only
+
+In addition, **each of the logging functions HAS TWO SIGNATURES: one that takes a TAG string and a message string, and a second that takes those two arguments plus an instance of Throwable, which makes it easy to log information about a particular exception that your application might throw.**
+
+<img width="475" alt="image" src="https://user-images.githubusercontent.com/66931789/185667196-bd389980-d426-4e2a-9f86-e0e52fccf8f1.png">
+
+
+
+
+
+
 
 
