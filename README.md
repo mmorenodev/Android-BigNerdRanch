@@ -110,3 +110,14 @@ The Android framework defines **View.OnClickListener** as a Java interface with 
 A toast is a short message that informs the user of something but does not require any input or action. 
 
 **When you use code completion, YOU DO NOT HAVE TO DO ANYTHING TO IMPORT THE MISSING/NEW CLASS. When you accept a code completion suggestion, the necessary classes are imported automatically.**
+
+
+## AndroidX Annotations
+Expose metadata that helps tools and other developers understand your app's code.
+These annotations help the code inspector built into Android Studio (named Lint) verify at compile time that you call a valid string resource ID. This prevents runtime crashes where the code is used with invalid resource IDs. 
+Second, these annotations make your code more readable for other developers. 
+
+A common through-line of many software architecture patterns (such as Movel-View-controller, Model-View-Presenter, Model-View-ViewModel, and so on) is the concept of the 'model'. In these architecture patterns, models are classes that CONTAIN INFORMATION THAT THE UI WILL DISPLAY. **We recommend that you create these classes using the 'data' keyword. Doing so clearly indicates that the class is meant to hold your life easier, such as defining useful functions like equals(), hashCode(), and a nice formatted toString().**
+
+
+
