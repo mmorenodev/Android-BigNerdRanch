@@ -131,5 +131,18 @@ For each view with the 'android:id' attribute defined in a layout XML, View Bind
   
 Unlike a 'findViewById()' call, this has the benefit of keeping your XML layouts and activities in sync if you change the kinds of views in your UI. 
   
+## Adding an Icon
+Since Android 5.0 (API 21), the Android platform has provided support for vector graphics using the 'VectorDrawable' class. Whenever possible, we recommend that you use vector drawables to display vector graphics in your apps. Vector drawables are scalable without any loss of visual quality, so they always look crisp and free of image artifacts. And they are more space efficient than traditional bitmap images, resulting in a smaller final application. 
+
+## Screen Pixel Densities
+To provide a consistent experience on all devices, Android provides density-independent dimension units that you can sue to get the same size on different screen densities. Android translates these units using the device's defined density bucket to pixels at runtime, so there is no tricky math for you to do. These density buckets range from low density (LDPI) to medium density (MDPI) to high density (HDPI) and all the way up to extra-extra-high density (XXXHDPI).
+
+<img width="675" alt="image" src="https://user-images.githubusercontent.com/66931789/185645491-c2485a83-5b33-470c-b599-297b0ca536ae.png">
+
+sp -> Short for 'scale-independent pixel'. Scale-independent pixels are density-independent pixels that also take into account the user's font size preference. you will almost always use 'sp' to set display text size. 
+
+Android translates 'dp' and 'sp' into pixels at runtime. 
+
+
 
 
