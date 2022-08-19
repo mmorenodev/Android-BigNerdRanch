@@ -119,5 +119,17 @@ Second, these annotations make your code more readable for other developers.
 
 A common through-line of many software architecture patterns (such as Movel-View-controller, Model-View-Presenter, Model-View-ViewModel, and so on) is the concept of the 'model'. In these architecture patterns, models are classes that CONTAIN INFORMATION THAT THE UI WILL DISPLAY. **We recommend that you create these classes using the 'data' keyword. Doing so clearly indicates that the class is meant to hold your life easier, such as defining useful functions like equals(), hashCode(), and a nice formatted toString().**
 
+## Tools Namespace
+The tools namespace allows you to override any attribute on a view for the purpose of displaying it in the Android Studio preview. The tools attributes are ignored when rendering the views on a device at runtime. You could also use 'android:text' for example and just overwrite the value at runtime, but using 'tools:text' instead makes it clear that the value you provide is for preview purposes only. 
+
+**String resources, you can use ALL THE USUAL ESCAPE SEQUENCES IN YOUR STRING RESOURCES, SUCH AS '\n' FOR A NEW LINE**
+
+**ViewBinding is a feature of the build process that generates the 'findViewById' boilerplate code for you and allows you to safely and easily interact with your UI elements**
+
+## ViewBinding
+For each view with the 'android:id' attribute defined in a layout XML, View Binding will generate a property on a corresponding 'ViewBinding' class. Even better, View Binding automatically declares the type of the property to match the type of the view in your XML. So, for example, binding.trueButton is of type 'Button', because the view with the ID true_button is a <Button>.
+  
+Unlike a 'findViewById()' call, this has the benefit of keeping your XML layouts and activities in sync if you change the kinds of views in your UI. 
+  
 
 
