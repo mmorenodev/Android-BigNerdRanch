@@ -207,10 +207,81 @@ In addition, **each of the logging functions HAS TWO SIGNATURES: one that takes 
 
 <img width="475" alt="image" src="https://user-images.githubusercontent.com/66931789/185667196-bd389980-d426-4e2a-9f86-e0e52fccf8f1.png">
 
+# Persisting UI State
+A ViewModel is the perfect complement to an Activity because of its simple lifecycle and ability to persist data across configuration changes. It is USUALLY scoped to a single screen and is **a useful place to put logic invovled in FORMATTING the data to display on that screen.** Using a ViewModel aggregates all the data the screen needs in one place, formats the data, and makes it easy to access the end result. 
 
+## Including the ViewModel Dependency
+Before you can write a ViewModel class, you need to include two libraries in your project.
 
+When your app is compiled, Gradle will find, download, and include the dependencies for you. Al you have todo is specify an exact string incantation, and Gradle will do the rest. 
 
+1. androidx.lifecycle:lifecycle-viewmodel-ktx
+2. androidx.activity:activity-ktx
 
+## Adding a ViewModel
+The onCleared() function is called just before a ViewModel is destroyed. This is a useful place to perform any cleanup, such as unobserving a data source. 
 
+<img width="674" alt="image" src="https://user-images.githubusercontent.com/66931789/186281985-ef7fb36a-39d8-4570-bf9f-a785e5d5a5fb.png">
 
+The 'by' keyword indicates that a property is implemented USING A PROPERTY DELEGATE. In Kotlin **a property delegate is, as the name suggests, a way to DELEGATE THE FUNCTIONALITY OF A PROPERTY TO AN EXTERNAL UNIT OF CODE. A very common property delegate in Kotlin is lazy. The lazy property delegate allows developers to save resources by waiting to initialize the property only when it is accessed.**
+
+The viewModels() property delegate works the same way: Your ViewModel will not be initialized unless you access it.
+Under the hood, the 'viewModels()' property delegate handles many things for you. When the activity queries for a QuizViewModel for the first time, viewModels() creates and returns a new ViewModel instance. When the activity queries for the ViewModel after a configuration change, the instance that was first created is returned. When the activity is finished, the ViewModel-Activity pair is removed from memory. 
+
+**You shouldn't directly instantiate the ViewModel within your Activity. Instead, rely on the viewModels() property delegate. It might seem like instantiating the ViewModel yourself would work just the same, but you would lose the benefit of the same instance being returned after your Activity's configuration change.**
+
+## ViewModel lifecycle
+When the user finishes an activity, they expect their UI state to be reset. When the user rotates an activity, they expect their UI state to be the same after rotation. ViewModel offers a way to keep an activity's UI state data in memory across configuration changes. Its lifecycle mirrors the user's expectations: it survives configuration changes and is destroyed only when its associated activity is finished. 
+
+When you associate a ViewModel instance with an activity's lifecycle, the ViewModel is said to be SCOPED to that activity's lifecycle. This means the ViewModel will remain in memory, regardless of the activity's state, until the activity is finished. Once the activity is finished, the ViewModel instance is destroyed. 
+
+This means that the ViewModel stays in memory during a configuration change, such as rotation. During the configuration change, the activity instance is destroyed and re-created, but any ViewModels scoped to the activity stay in memory. 
+
+**The relationship between an Activity and a ViewModel is unidirectional. The activity references the ViewModel, but the ViewModel does not access the activity. Your ViewModel SHOULD NEVER HOLD A REFERENCE TO AN ACTIVITY OR A VIEW, OTHERWISE YOU WILL INTRODUCE A MEMORY LEAK.**
+
+A memory leak **occurs when one object holds A STRONG REFERENCE to another object that SHOULD BE DESTROYED. The strong reference prevents the garbage collector from clearing the object from memory. Memory leaks due to a configuration change are common bugs.**
+
+Your ViewModel instance stays in memory across rotation, while your original activity instance gets destroyed. If the ViewModel held a strong reference to the original activity instance, two problems would occur: First, the original activity instance would not be removed from memory, and thus the activity would be leaked. Second, the ViewModel would hold a reference to a stale activity. If the ViewModel tried to update the view of the stale activity, it would trigger an IllegalStateException. 
+
+**KEEPING ACTIVITIES AS SIMPLE AS POSSIBLE IS A GOOD THING, any logic you put in your activity might be unintentionally affected by the activity's lifecycle. Also, removing presentation logic means the activity is only responsible for handling what appears on the screen, not the logic behind determining the data to display.**
+
+## Saving Data Across Process Death
+Configuration changes ARE NOT THE ONLY TIME THE OS CAN DESTROY AN ACTIVITY even though the user does not intend it to. 
+
+**Each app gets its own process (more specifically, a Linux process) CONTAINING A SINGLE THREAD TO EXECUTE UI-RELATED WORK ON AND A PIECE OF MEMORY TO STORE OBJECTS IN.
+YES, READ IT AGAIN, A PIECE OF MEMORY TO STORE OBJECTS IN. 
+An app's process can be destroyed by the OS if the user navigates away for a while and Android needs to reclaim memory. When an app's process is destroyed, all the objects stored in that process' memory are destroyed.**
+
+Processes containing resumed or started activities get higher priority than other processes. When the OS needs to free up resources, it will select lower-priority processes first. Practically speaking, a process containing a visible activity WILL NOT BE RECLAIMED BY THE OS. If a foreground process does get reclaimed, that means something is horribly wrong with the device (and your app being killed is probably the least of the user's concerns).
+
+But processes that do not have any activities in the started or resumed state are fair game to be killed. So, for example, if the user navigates to the Home screen and then goes and watches a video or plays a game, your app's process might be killed. 
+
+Activities themselves are not individually destroyed in low-memory situations. **Instead, Android clears an entire app process from memory, taking any of the app's in-memory activities with it.**
+
+When the oS destroys the app's process, any of the app's activities and ViewModels stored in memory will be wiped away. And the OS will not be nice about the destruction. There is no guarantee that it will call any of the activity or ViewModel lifecycle callback functions. So how can you save UI state data and use it to RECONSTRUCT the activity so that the user never even knows the activity was destroyed? One way to do so is to store data in 'save instance state'. Saved instance state is DATA THE OS TEMPORARILY STORES OUTSIDE OF THE ACTIVITY. You can add values to saved instance state by using a 'SavedStateHandle'. 
+
+**Back in the early days of Android, you would be responsible for handling saved instance state like it was a lifecycle callback. Now, you can pass a SavedStateHandle into your ViewModel through the constructor. You can use the SavedStateHandle like a key-value map, storing simple pieces of data like integers and strings.**
+
+<img width="885" alt="image" src="https://user-images.githubusercontent.com/66931789/186284426-e20e4e6f-400c-4bca-a58c-ab51750c596f.png">
+
+## Simulate low-memory situation
+
+<img width="433" alt="image" src="https://user-images.githubusercontent.com/66931789/186284492-05afdb57-0acc-43d8-a28e-bc55a7d309ae.png">
+
+SavedStateHandle has its limitations. The data within SavedStateHandle is SERIALIZED and written to disk, so you should avoid stashing any large or complex objects. **You should only use SavedStateHandle to store the minimal amount of information necessarry to re-create the UI state.**
+
+AndroidX and Jetpack ARE USED INTERCHANGEABLY. 
+
+## Avoiding a Half-Baked Solution
+Some people try to address the UI state loss on configuration change bug in their app by disabling roation. If the user cannot rotate the app, they never lose their UI state, right? That is true but, sadly, this approach leaves your app prone to other bugs. While this smooths over the rough edge of rotation, it leaves other lifecycle bugs that users will surely encounter, but that will not necessarily present themselves during development and testing. 
+
+First, there are other configuration changes that can occur at runtime, such as window resizing and night mode changes. And yes, you could also capture and ignore or handle those changes. But this is a bad practice -it disables a feature of the system, which is automatically SELECT THE RIGHT RESOURCES BASED ON THE RUNTIME CONFIGURATION. 
+Second, disabling rotation does not solve the process death issue. 
+If you want to lock your app into portrait or landscape mode 'because it makes sense for your app', you should still program defensively against configuration changes and process death. 
+In short, dealing with UI state loss by BLOCKING CONFIGURATION CHANGES is bad form. 
+
+## Activity and Instance State
+SavedStateHandle is an easy-to-use API that allows you to safely store and retrieve instance state and persist that information even if your process is killed. But it has not always been around. 
+With the adoption of the ViewModel library, the old APIs became awkward and resulted in confusing code. There were multiple places where you had to pass data between your ViewModel and Activity, and keeping state consistent between the two was error prone. 
+With the SavedStateHandle and ViewModel classes, you can keep all the instance state business logic within your ViewModel. That means you can avoid the awkward dance between your ViewModel and Activity, and also make your Activity simpler. 
 
