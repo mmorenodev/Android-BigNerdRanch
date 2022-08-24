@@ -330,6 +330,46 @@ The Activity Results API is different from other APIs you have interacted with s
 2. A lambda in which you parse the output that is returned. 
 
 
+## Using Activity Result API
+Applying an Activity Result consists of three steps:
+
+<img width="780" alt="image" src="https://user-images.githubusercontent.com/66931789/186527489-d35357e1-273c-4d70-8bcf-7d0f4a2566e3.png">
+
+1. Creating a contract
+Contract is a class that implements the ActivityResultContract<I,O> interface. Where you define the type of input data necessary to start the Activity, and defines the callback result type. 
+For typical tasks, you can use out-of-the-box implementations: PickContact, TakePicture, RequestPermission, and others. 
+When creating a contract, we should implement two of its methods:
+- createIntent(): accepts input data and creates an intent, which will be later launched by calling launch()
+- parseResult(): is responsible for returning the result, handling resultCode, and parsing the data. 
+
+Another method, getSynchronousResult(), can be overriden if necessary. It allows you to return the result immediately, without starting the Activity, for example, if the received input data is invalid. If this behavior is not required, the method returns null by default. 
+
+2. Registering a contract
+The next step is to register the contract in the activity or fragment by calling 'registerForActivityResult()'. You need to pass ActivityResultContract and ActivityResultCallback as parameters. The callback will be invoked when the result is received. 
+
+<img width="723" alt="image" src="https://user-images.githubusercontent.com/66931789/186528425-953011ce-22c1-4ed5-b69f-f59bdba2d9c2.png">
+
+**Registering a contract won't start a new Activity, but only returns a special ActivityResultLauncher object that is necessary for the following step. 
+
+3. Launching a contract
+To start the Activity, we only need to call 'launch()' on the ActivityResultLauncher object that we have obtained in the previous step. 
+
+<img width="407" alt="image" src="https://user-images.githubusercontent.com/66931789/186528553-bdd0fb69-d600-46da-b4b2-abf4860673bb.png">
+
+IMPORTANT!
+- Contracts can be registered at any point of the activity or fragment lifecycle, but they cannot be launched before going to the CREATED state. A common approach is to register contracts as class fields. 
+- If we start an **implicit Intent** and the operating system is not able to find a suitable Activity, an exception ActivityNotFoundException: "No Activity foudn to handle Intent" will be thrown. To avoid this situation, you need to **check resolveActivity() with PackageManager before calling launch() or in getSynchronousResult() method.**
+
+The Activity Result APIs provide components for registering for a result, launching the result, and handling the result once it is dispatched by the system. 
+
+**registerForActivityResult() takes an ActivityResultContract and an ActivityResultCallback and returns an ActivityResultLauncher which you'll use to launch the other activity.**
+
+registerForActivityResult() is safe to call before your fragment or activity is created, allowing it to be used directly when declaring member variables for the returned ActivityResultLauncher instances. But you cannot launch the ActivityResultLauncher until the fragment or activity's CREATED. 
+
+
+
+
+
 
 
 
