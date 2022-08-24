@@ -366,6 +366,28 @@ The Activity Result APIs provide components for registering for a result, launch
 
 registerForActivityResult() is safe to call before your fragment or activity is created, allowing it to be used directly when declaring member variables for the returned ActivityResultLauncher instances. But you cannot launch the ActivityResultLauncher until the fragment or activity's CREATED. 
 
+## Getting a result back from a child activity
+There are two functions you can call in the child activity to send data back to the parent:
+
+<img width="553" alt="image" src="https://user-images.githubusercontent.com/66931789/186534156-f8c43416-c1d6-4d57-8627-739b4a25aafc.png">
+
+Typically, the 'result code' is one of two predefined constants:
+- Activity.RESULT_OK 
+- Activity.RESULT_CANCELED
+
+Setting result codes is useful when the parent needs to take different action depending on how the child activity finished. For example, if a child activity had an OK button and a Cancel button, the child activity would set a different result code depending on which button was pressed. Then the parent activity would take a different action depending on the result code. 
+
+## Sending back an intent
+<img width="492" alt="image" src="https://user-images.githubusercontent.com/66931789/186534412-800c53d8-ed19-407d-a501-cbb165b8fa89.png">
+
+ActivityManager lives with the OS instead of a single application.
+
+## The Back Button and the Activity Lifecycle
+Based on the AndroidManifest.xml the back button and the activity lifecycle can differ. 
+When you are in the launcher activity and you press the back button, it keeps the launcher activity in memory to allow users to quickly resume using the app in a "warm state" after navigating back instead of having to completely restart the application.
+This is a fairly new behavior on Android, introduced with Android 12 (API 31). In previous Android versions, your launcher activity would mirror as others, and be popped off the back stack and removed from memory when the user navigated back. 
+
+
 
 
 
