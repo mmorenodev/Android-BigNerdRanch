@@ -285,3 +285,51 @@ SavedStateHandle is an easy-to-use API that allows you to safely store and retri
 With the adoption of the ViewModel library, the old APIs became awkward and resulted in confusing code. There were multiple places where you had to pass data between your ViewModel and Activity, and keeping state consistent between the two was error prone. 
 With the SavedStateHandle and ViewModel classes, you can keep all the instance state business logic within your ViewModel. That means you can avoid the awkward dance between your ViewModel and Activity, and also make your Activity simpler. 
 
+## Starting an Activity
+If you are coming from other programming languages and platforms, your first instinct might be to call the constructor on the activity you want to start. Unfortunately, that will not work. Instead you ahve to call 'startActivity(Intent)', and the OS will manage creating your activity for you. 
+
+<img width="711" alt="image" src="https://user-images.githubusercontent.com/66931789/186461409-6198347e-2569-4c3a-9f67-e98af05db78e.png">
+
+How does the ActivityManager know which Activity to start? That information is in the Intent parameter. 
+
+An **Intent** is an object that a **component** can use to communicate with the OS.
+
+Intents are multipurpose communication tools, and the Intent class PROVIDES DIFFERENT CONSTRUCTORS DEPENDING ON WHAT YOU ARE USING THE INTENT TO DO. 
+
+The 'Class' argument you pass to the Intent constructor specifies the activity class that the 'ActivityManager' should start. The 'Context' argument tells the 'ActivityManager' which application package the activity class can be found in. 
+Before starting the activity, the ActivityManager checks the package's manifest for a declaration with the same name as the specified Class. If it finds a declaration, it starts the activity, and all is well. If it does not, you get a nasty 'ActivityNotFoundException', which will crash your app. This is WHY ALL YOUR ACTIVITIES MUST BE DECLARED IN THE MANIFEST. 
+
+## Explicit and implicit intents
+When you create an Intent with a Context and a Class object, you are creating an EXPLICIT INTENT. You use explicit intents to start specific activities, most often within your own application. 
+It may seem strange that two activities within your application must communicate via the ActivityManager, which is outside your application. However, this pattern, makes it easy for an activity in one application to work with an activity in another application. 
+When an activity in your application wants to start an activity in another application, you create an IMPLICIT INTENT. 
+
+## Using intent extras
+Extras are arbitrary data that the calling activity can include with an intent. You can think of them like constructor arguments, even though you cannot use a custom constructor with an activity subclass. An extra is structured as key-value pair. 
+To add an extra to an intent, you use the Intent.putExtra(....). 
+Intent.putExtra(...) comes in many flavors, but it always has two arguments. The first argument is always a String key, and the second argument is the value, whose type will vary. It returns the Intent itself, SO YOU CAN CHAIN MULTIPLE CALLS IF YOU NEED TO. 
+
+## Adding an extra constant
+An activity may be started from several different places, so you should define keys for extras on the activities that retrieve and use them. Using your package name as a qualifier for your extra, prevents name colissions with extras from other apps. 
+
+<img width="768" alt="image" src="https://user-images.githubusercontent.com/66931789/186465241-085e6609-8a4c-4c43-9377-e31b02c922f9.png">
+
+<img width="799" alt="image" src="https://user-images.githubusercontent.com/66931789/186465424-2e52810f-3af9-4d52-9ab9-71a8a9187506.png">
+
+A companion object allows you to access functions without having an instance of a class, similar to static functions in Java. Using a 'newIntent(...)' function inside a companion object like this for your activity subclasses WILL MAKE IT EASY FOR OTHER CODE TO PROPERTY CONFIGURE ITS LAUNCHING INTENTS. 
+
+Note that 'Activity.getIntent()' always returns the 'Intent' that started the activity. This is what you sent when callingn 'startActivity(Intent)'. 
+
+<img width="573" alt="image" src="https://user-images.githubusercontent.com/66931789/186465961-1f22f7e7-30a4-45f5-bcf5-b9b215f9c025.png">
+
+## Getting a result back from a child activity
+When you want to hear back from the child activity, you register your MainActivity for an 'ActivityResult' using the **Activity Results API.**
+
+The Activity Results API is different from other APIs you have interacted with so far. INSTEAD OF OVERRIDING A LIFECYCLE METHOD, YOU WILL INITIALIZE A CLASS PROPERTY WITHIN YOUR Activity using the **registerForActivityResult()** function. That function takes in two parameters: 
+1. The CONTRAT that defines the input and output of the Activity you are trying to start. 
+2. A lambda in which you parse the output that is returned. 
+
+
+
+
+
